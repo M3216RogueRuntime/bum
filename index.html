@@ -1,629 +1,100 @@
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Physics Playground</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator Project</title>
+    <style>
+        .calcgrid{
+            display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 5px;
+			border: 1px solid black;
+			padding: 5px;
+			width: fit-content;
+			margin-left: 10pxs;
+			margin-right: 10px;
+        }
+        .span{
+            grid-column: span 3;}
 
-    <!--    Favicon things      -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
-    <link rel="manifest" href="/assets/site.webmanifest">
-    <link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#5bbad5">
-    <link rel="shortcut icon" href="/assets/favicon.ico">
-    <meta name="msapplication-TileColor" content="#da532c">
-    <meta name="msapplication-config" content="/assets/browserconfig.xml">
-    <meta name="theme-color" content="#ffffff">
+        input[type="button"] {
+			width: 100%;
+			padding: 20px 40px;
+            color: white;
+			font-size: 24px;
+			font-weight: bold;
+			border: lightskyblue;
+			border-radius: 5px;
+			box-sizing: border-box;
+			cursor: pointer;
+        }
+        .btn-number{
+            background-color: green;
+        }
+        .btn-operator{
+            background-color: blue;
+        }
+        .btn-clear{
+            background-color: red;
+        }
+        .btn-equal{
+            background-color: gray;
+        }
 
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <link rel="stylesheet" href="styles/globalStyles.css">
-    <link rel="stylesheet" href="styles/generalStyles.css">
-    <link rel="stylesheet" href="styles/leftBarStyles.css">
-    <link rel="stylesheet" href="styles/topBarStyles.css">
-    <link rel="stylesheet" href="styles/rightBarStyles.css">
-    <link rel="stylesheet" href="styles/settingsStyles.css">
-    <link rel="stylesheet" href="styles/timelineStyles.css">
-    <link rel="stylesheet" href="styles/eventModalStyles.css">
-    <link rel="stylesheet" href="styles/tutorialStyles.css">
-    <link rel="stylesheet" href="styles/bookmarksStyles.css">
-    <link rel="stylesheet" href="styles/bookmarkModalStyles.css">
+        input[type="text"] {
+			width: 100%;
+			padding: 20px 30px;
+			font-size: 30px;
+			font-weight: bold;
+			border-radius: 5px;
+			border: 2px solid black;
+			box-sizing: border-box;
+		}
+    </style>
 </head>
+<body>
+    <!--btw if youre new to the river, calc's short for calculator, im js using slang-->
+    <div id="calc" class="calcgrid">
+        <!--First Row-->
+        <div class="span"><input type="text" id="result"></div>
+        <div><input type="button" value="c" class="btn-clear" onclick="clr()" /></div>
+        <!--Second Row-->
+        <div><input type="button" value="1" class="btn-number" onclick="dis('1')" onkeydown="myFunction(event)"></div>
+        <div><input type="button" value="2" class="btn-number" onclick="dis('2')" onkeydown="myFunction(event)"></div>
+        <div><input type="button" value="3" class="btn-number" onclick="dis('3')" onkeydown="myFunction(event)"></div>
+        <div><input type="button" value="/" class="btn-operator" onclick="dis('/')" onkeydown="myFunction(event)"></div>
+        <!--Third Row-->
+        <div><input type="button" value="4" class="btn-number" onclick="dis('4')" onkeydown="myFunction(event)"></div>
+        <div><input type="button" value="5" class="btn-number" onclick="dis('5')" onkeydown="myFunction(event)"></div>
+        <div><input type="button" value="6" class="btn-number" onclick="dis('6')" onkeydown="myFunction(event)"></div>
+        <div><input type="button" value="*" class="btn-operator" onclick="dis('*')" onkeydown="myFunction(event)"></div>
+        <!--Fourth Row-->
+        <div><input type="button" value="7" class="btn-number" onclick="dis('7')" onkeydown="myFunction(event)"></div>
 
-<body class="dark-theme">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"
-        integrity="sha512-avLcnGxl5mqAX/wIKERdb1gFNkOLHh2W5JNCfJm5OugpEPBz7LNXJJ3BDjjwO00AxEY1MqdNjtEmiYhKC0ld7g=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <div id="app">
-        <canvas id="viewportCanvas"></canvas>
-        <div id="rounded-corner-container">
-            <div id="rounded-corner-left" class="collapsed"></div>
-            <div id="rounded-corner-right" class="collapsed"></div>
-        </div>
-        <div id="notification-popup">
-            <button class="close-button icon-buttons big-icon-buttons"
-                style="visibility: inherit; display: inline-block;" id="close-notification-popup"></button>
-            <p id="notification-popup-text"></p>
-        </div>
-        <div id="left-ui">
-            <div class="left-bar-tools">
-                <button class="material-symbols-outlined" id="translate-button">
-                    open_with
-                </button>
-                <button class="material-symbols-outlined" id="scale-button">
-                    resize
-                </button>
-                <button class="material-symbols-outlined" id="rotate-button">
-                    rotate_right
-                </button>
-                <div class="horizontal-separator"></div>
-                <button class="material-symbols-outlined" id="add-cube-button">
-                    check_box_outline_blank
-                </button>
-                <button class="material-symbols-outlined" id="add-sphere-button">
-                    radio_button_unchecked
-                </button>
-            </div>
-            <div id="bottom-left-buttons-container">
-                <button class="material-symbols-outlined" id="bookmarks-button">
-                    bookmarks
-                </button>
-                <button class="material-symbols-outlined" id="timeline-button">
-                    timeline
-                </button>
-                <button class="material-symbols-outlined" id="settings-button">
-                    settings
-                </button>
-            </div>
-        </div>
-        <div id="top-ui">
-            <button class="material-symbols-outlined" id="top-play">
-                play_arrow
-            </button>
-            <button class="material-symbols-outlined" id="top-replay">
-                fast_rewind
-            </button>
-            <div class="vertical-separator"></div>
-            <button id="collapse-right-ui-button" class="material-symbols-outlined collapsed">
-                chevron_left
-            </button>
-            <div>
-                <span>Time:</span>
-                <span class="top-field top-field-text" id="time">0.000</span>
-            </div>
-            <div class="input-with-pop-up-label">
-                <div id="time-scale-container" class="Horizontal-Flex-Container slider-container">
-                    <input type="range" min="0.25" max="3" step="0.25" value="1" id="time-scale-slider">
-                    <div id="time-scale-slider-value" class="slider-value">1 x</div>
-                </div>
-                <label for="time-scale-slider" class="popup-label" id="time-scale-slider-label">Time scale</label>
-            </div>
-        </div>
-        <div id="right-ui" class="Vertical-Flex-Container Big-Gap collapsed">
-            <div class="input-with-pop-up-label">
-                <input id="object-name" class="Big-Text-Input" value="No item is selected" disabled type="text">
-                <label for="object-name" class="popup-label" id="object-name-label">Object name</label>
-            </div>
-            <div id="right-ui-properties" class="Vertical-Flex-Container Big-Gap Disabled">
-                <div class="right-appearance-grid">
-                    <div class="Vertical-Flex-Container">
-                        <label for="item-color-picker" class="Title-Small">Color</label>
-                        <input disabled class="right-ui-input color-picker" type="color" value="#ffffff" id="item-color-picker">
-                    </div>
-                    <div class="Vertical-Flex-Container">
-                        <label for="mass-input" class="Title-Small Horizontal-Flex-Container Small-Gap">
-                            Mass
-                            <button class="material-symbols-outlined info-button" id="mass-info-button">
-                                info
-                            </button>
-                        </label>
-                        <div class="Tooltip-Container Collapsed Horizontal-Flex-Container Align-Top" id="mass-tooltip">
-                            Set the mass of an object to 0 to make it immovable
-                            <button class="material-symbols-outlined" id="mass-tooltip-close-button">close</button>
-                        </div>
-                        <div class="Horizontal-Flex-Container Small-Gap">
-                            <input disabled class="right-ui-input" type="text" id="mass-input">
-                            <div class="Label-Small">
-                                kg
-                            </div>
-                        </div>
-                    </div>
-                    <div class="Vertical-Flex-Container Space-Between" id="dimensions-container">
-                        <label for="mass-input" class="Title-Small Horizontal-Flex-Container Small-Gap">
-                            Dimensions
-                            <button class="material-symbols-outlined info-button" id="dimensions-info-button">
-                                info
-                            </button>
-                        </label>
-                        <div class="Tooltip-Container Collapsed Horizontal-Flex-Container Align-Top" id="dimensions-tooltip">
-                            In a sphere all the dimensions change when one is changed
-                            <button class="material-symbols-outlined" id="dimensions-tooltip-close-button">close</button>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="width-input" class="Label">W</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="width-input">
-                                <div class="Label-Small">
-                                    m
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="height-input" class="Label">H</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="height-input">
-                                <div class="Label-Small">
-                                    m
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="depth-input" class="Label">D</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="depth-input">
-                                <div class="Label-Small">
-                                    m
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="right-first-degree-grid" class="right-properties-grid">
-                    <div class="Vertical-Flex-Container">
-                        <div class="Title-Small">Position</div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="position-x-input" class="Label">X</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="position-x-input">
-                                <div class="Label-Small">
-                                    m
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="position-y-input" class="Label">Y</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="position-y-input">
-                                <div class="Label-Small">
-                                    m
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="position-z-input" class="Label">Z</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="position-z-input">
-                                <div class="Label-Small">
-                                    m
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="Vertical-Flex-Container">
-                        <div class="Title-Small">Rotation</div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="rotation-x-input" class="Label">X</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="rotation-x-input">
-                                <div class="Label-Small">
-                                    rad
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="rotation-y-input" class="Label">Y</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="rotation-y-input">
-                                <div class="Label-Small">
-                                    rad
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="rotation-z-input" class="Label">Z</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="rotation-z-input">
-                                <div class="Label-Small">
-                                    rad
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="right-second-degree-grid" class="right-properties-grid">
-                    <div class="Vertical-Flex-Container">
-                        <div class="Title-Small">Velocity</div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="velocity-x-input" id="label-velocity-x" class="Label">X</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="velocity-x-input">
-                                <div class="Label-Small">
-                                    m/s
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="velocity-y-input" class="Label">Y</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="velocity-y-input">
-                                <div class="Label-Small">
-                                    m/s
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="velocity-z-input" class="Label">Z</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="velocity-z-input">
-                                <div class="Label-Small">
-                                    m/s
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="Vertical-Flex-Container">
-                        <div class="Title-Small">Angular Velocity</div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="angular-velocity-x-input" class="Label">X</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="angular-velocity-x-input">
-                                <div class="Label-Small">
-                                    rad/s
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="angular-velocity-y-input" class="Label">Y</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="angular-velocity-y-input">
-                                <div class="Label-Small">
-                                    rad/s
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="angular-velocity-z-input" class="Label">Z</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="angular-velocity-z-input">
-                                <div class="Label-Small">
-                                    rad/s
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="right-third-degree-grid" class="right-properties-grid">
-                    <div class="Vertical-Flex-Container">
-                        <div class="Title-Small" id="acceleration-title">Acceleration</div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="acceleration-x-input" class="Label">X</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="acceleration-x-input">
-                                <div class="Label-Small">
-                                    m/s²
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="acceleration-y-input" class="Label">Y</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="acceleration-y-input">
-                                <div class="Label-Small">
-                                    m/s²
-                                </div>
-                            </div>
-                        </div>
-                        <div class="Horizontal-Flex-Container">
-                            <label for="acceleration-z-input" class="Label">Z</label>
-                            <div class="Horizontal-Flex-Container Small-Gap">
-                                <input disabled class="right-ui-input" type="text" id="acceleration-z-input">
-                                <div class="Label-Small">
-                                    m/s²
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="right-ui-list-container" class="Vertical-Flex-Container">
-                <h3>Objects in scene</h3>
-                <div id="right-ui-objects-list">
+    </div>
 
-                </div>
-                <div id="clear-button-container">
-                    <button id="clear-scene-button">Clear</button>
-                </div>
-            </div>
-        </div>
-        <div id="settings-box" class="collapsed">
-            <div class="title-bar">
-                <h2>Settings</h2>
-                <button class="material-symbols-outlined" id="close-settings-button">
-                    close
-                </button>
-            </div>
-            <div class="settings-subsection">
-                <h3 class="settings-subsection-title">Interface</h3>
-                <section class="settings-subsection">
-                    <label for="device-theme-toggle" class="Title-Small">Use device theme</label>
-                    <div class="settings-subsubsection">
-                        <div class="Label">Whether the app follows the device theme</div>
-                        <div class="settings-content">
-                            <input type="checkbox" class="Toggle-Input" id="device-theme-toggle">
-                        </div>
-                    </div>
-                </section>
-                <section class="settings-subsection" id="theme-section">
-                    <div class="Title-Small">Theme</div>
-                    <div class="settings-subsubsection">
-                        <div class="Label">The app theme</div>
-                        <div id="theme-container" class="settings-content">
-                            <div class="input-with-pop-up-label">
-                                <input type="radio" id="light-theme-radio" value="light" name="theme-radio" class="theme-radio-button">
-                                <label for="light-theme-radio" class="popup-label" id="light-theme-radio-label">Light</label>
-                            </div>
-                            <div class="input-with-pop-up-label">
-                                <input type="radio" id="dark-theme-radio" value="dark" name="theme-radio" class="theme-radio-button" checked="checked">
-                                <label for="dark-theme-radio" class="popup-label" id="dark-theme-radio-label">Dark</label>
-                            </div>
-                            <div class="input-with-pop-up-label">
-                                <input type="radio" id="midnight-theme-radio" value="midnight" class="theme-radio-button" name="theme-radio">
-                                <label for="midnight-theme-radio" class="popup-label" id="midnight-theme-radio-label">Midnight</label>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                <section class="settings-subsection">
-                    <label for="device-theme-toggle" class="Title-Small">Use device theme</label>
-                    <div class="settings-subsubsection">
-                        <div class="Label">
-                            Click to show the app tutorial.
-                            <br>
-                            This will reset the simulation
-                        </div>
-                        <div class="settings-content">
-                            <button class="Normal-Button Small" id="show-tutorial-button">Show tutorial</button>
-                        </div>
-                    </div>
-                </section>
-            </div>
-            <div class="settings-subsection">
-                <h3 class="settings-subsection-title">Simulation</h3>
-                <section class="settings-subsection">
-                    <div class="Title-Small">Camera type</div>
-                    <div class="settings-subsubsection">
-                        <div class="Label">The type of the simulation camera</div>
-                        <div id="camera-type-container" class="settings-content Title-Small">
-                            <input type="radio" id="perspective-camera-radio" value="perspective" name="camera-radio">
-                            <label for="perspective-camera-radio" class="Clickable" id="perspective-camera-label">Perspective</label>
-                            <input type="radio" id="orthographic-camera-radio" value="orthographic" name="camera-radio" checked="checked">
-                            <label for="orthographic-camera-radio" class="Clickable" id="orthographic-camera-label">Orthographic</label>
-                        </div>
-                    </div>
-                </section>
-                <section class="settings-subsection Disabled" id="camera-fov-container-section">
-                    <label class="Title-Small Horizontal-Flex-Container" for="camera-fov-slider">Camera fov</label>
-                    <div class="settings-subsubsection">
-                        <div class="Label">The field-of-view of the simulation camera</div>
-                        <div id="camera-fov-container" class="Horizontal-Flex-Container slider-container">
-                            <input type="range" min="20" max="110" step="1" value="45" id="camera-fov-slider" disabled>
-                            <div id="camera-fov-slider-value" class="slider-value">45</div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-            <div class="settings-subsection last-subsection">
-                <h3 class="settings-subsection-title">Scene</h3>
-                <section class="settings-subsection">
-                    <div class="Title-Small">Export scene</div>
-                    <div class="settings-subsubsection">
-                        <div class="Label">Pressing this button will download a json file you can later import</div>
-                        <a id="download-button" class="material-symbols-outlined Button" aria-disabled="true">download</a>
-                    </div>
-                </section>
-                <section class="settings-subsection">
-                    <div class="Title-Small">Import scene from json</div>
-                    <div class="settings-subsubsection">
-                        <div class="Label">Pressing this button will prompt you to open a previously downloaded json file</div>
-                        <div>
-                            <label for="upload-button-input" class="material-symbols-outlined Button">upload</label>
-                            <input type="file" id="upload-button-input">
-                        </div>
-                    </div>
-                </section>
-            </div>
-            <a
-                    href="https://gr.linkedin.com/in/konstantinos-prasinos-ab2a201bb?trk=people-guest_people_search-card"
-                    class="Horizontal-Flex-Container Label-Small logo-container"
-                    target="_blank" >
-                <span>Made by Konstantinos Prasinos</span>
-                <div class="logo" id="linkedin-logo"></div>
-            </a>
-            <a
-                    href="https://github.com/KonstantinosPrasinos/Physics-Playground"
-                    class="Horizontal-Flex-Container Label-Small logo-container"
-                    target="_blank" >
-                <span>Check this app on GitHub</span>
-                <div class="logo" id="github-logo"></div>
-            </a>
-        </div>
-        <div id="timeline-box" class="collapsed Vertical-Flex-Container">
-            <div id="timeline-title-bar" class="title-bar">
-                <h2>Timeline</h2>
-                <button class="material-symbols-outlined" id="close-timeline-button">
-                    close
-                </button>
-            </div>
-            <div id="timeline-container" class="table-container">
-                <div class="table-header">
-                    <div>Time</div>
-                    <div>Source</div>
-                    <div>Event type</div>
-                    <div>Target</div>
-                </div>
-                <div class="table-body" id="timeline-table-body">
+    <script>
+        <!--Clear Button-->
+        function clr(){
+            document.getElementById("result").value= ""
+        }
+        <!--Calculator Buttons-->
+        function dis(val) {
+			document.getElementById("result").value += val
+		}
+        <!--Type from keyboard-->
+        function myFunction(event) {
+			if (event.key == '0' || event.key == '1'
+				|| event.key == '2' || event.key == '3'
+				|| event.key == '4' || event.key == '5'
+				|| event.key == '6' || event.key == '7'
+				|| event.key == '8' || event.key == '9'
+				|| event.key == '+' || event.key == '-'
+				|| event.key == '*' || event.key == '/')
+				document.getElementById("result").value += event.key;
+		}
+    </script>
 
-                </div>
-            </div>
-            <h2 id="events-header">Events</h2>
-            <div class="table-container" id="events-table">
-                <div class="table-header">
-                    <div>Source</div>
-                    <div>Event type</div>
-                    <div>Target</div>
-                    <div></div>
-                </div>
-                <div class="table-body" id="events-table-body">
-                </div>
-            </div>
-            <div class="Horizontal-Flex-Container" id="add-event-button-container">
-                <button class="Normal-Button Small" id="add-event-button">
-                    Add new event
-                    <span class="material-symbols-outlined">
-                    add
-                </span>
-                </button>
-            </div>
-        </div>
-        <div id="bookmarks-box" class="collapsed">
-            <div id="bookmarks-title-bar" class="title-bar">
-                <h2>Bookmarks</h2>
-                <button class="material-symbols-outlined" id="close-bookmarks-button">
-                    close
-                </button>
-            </div>
-            <div class="Vertical-Flex-Container Vertical-Flex-Container" id="bookmarks-content">
-                <div class="bookmark-container" id="no-bookmarks">No bookmarks saved</div>
-            </div>
-            <div class="Horizontal-Flex-Container">
-                <button class="Normal-Button Small" id="bookmark-button" disabled>
-                    Save current scene
-                    <span class="material-symbols-outlined">bookmark</span>
-                </button>
-            </div>
-        </div>
-    </div>
-    <div id="create-bookmark-overlay" class="modal-overlay collapsed">
-        <div id="create-bookmark-modal" class="modal">
-            <section class="modal-text">
-                <h2 class="modal-title Headline-Small">Create bookmark</h2>
-                <span class="modal-description">In order to create a bookmark you need to provide a title for it.</span>
-            </section>
-            <section class="modal-content">
-                <div class="text-input-container">
-                    <label for="bookmark-title-input" class="Label-Medium">Bookmark title</label>
-                    <input type="text" placeholder="Descriptive title example" id="bookmark-title-input">
-                </div>
-            </section>
-            <section id="create-bookmark-footer" class="Horizontal-Flex-Container modal-footer">
-                <button id="cancel-create-bookmark-button" class="Normal-Button">Cancel</button>
-                <button id="save-create-bookmark-button" class="Normal-Button" disabled>Save</button>
-            </section>
-        </div>
-    </div>
-    <div id="create-event-overlay" class="modal-overlay collapsed">
-        <div id="create-event-modal" class="modal">
-            <section class="modal-text">
-                <h2 class="modal-title Headline-Small">Create event</h2>
-                <span class="modal-description">In order to create a new event you have to provide a source, a type of event to watch for and a target.
-                When an event triggers, the simulation will be paused and a message will be printed on the log.<br>
-                <strong>Tip: </strong> you need at least two objects to detect a collision</span>
-            </section>
-            <section id="create-event-content" class="Horizontal-Flex-Container modal-content">
-                <div class="select-container" id="event-source-select-container">
-                    <div class="select-main-container Clickable" id="event-source-select-main">
-                        <div id="event-source-select-main-text" class="select-main-text">Source</div>
-                        <span class="material-symbols-outlined" id="event-source-icon">
-                            expand_more
-                        </span>
-                    </div>
-                    <div class="select-options-container" id="event-source-options-container">
-                        <div class="Clickable select-option" id="source-option-time">Time</div>
-                    </div>
-                </div>
-                <div class="select-container Disabled" id="event-type-select-container">
-                    <div class="select-main-container Clickable" id="event-type-select-main">
-                        <div id="event-type-select-main-text">Event type</div>
-                        <span class="material-symbols-outlined" id="event-type-icon">
-                            expand_more
-                        </span>
-                    </div>
-                    <div class="select-options-container" id="type-options-container">
-                        <div class="Clickable select-option" id="type-option-collision">Collision</div>
-                        <div class="Clickable select-option" id="type-option-position-x">Position x</div>
-                        <div class="Clickable select-option" id="type-option-position-y">Position y</div>
-                        <div class="Clickable select-option" id="type-option-position-z">Position z</div>
-                        <div class="Clickable select-option" id="type-option-rotation-x">Rotation x</div>
-                        <div class="Clickable select-option" id="type-option-rotation-y">Rotation y</div>
-                        <div class="Clickable select-option" id="type-option-rotation-z">Rotation z</div>
-                        <div class="Clickable select-option" id="type-option-velocity-x">Velocity x</div>
-                        <div class="Clickable select-option" id="type-option-velocity-y">Velocity y</div>
-                        <div class="Clickable select-option" id="type-option-velocity-z">Velocity z</div>
-                    </div>
-                </div>
-                <div class="select-container Disabled" id="event-target-select-container">
-                    <div class="select-main-container Clickable" id="event-target-select-main">
-                        <label for="event-target-select-main-input" id="event-target-select-main-input-label"></label>
-                        <input type="text" id="event-target-select-main-input" placeholder="Target" class="Big-Text-Input" disabled>
-                        <span class="material-symbols-outlined" id="event-target-icon">
-                            edit
-                        </span>
-                    </div>
-                    <div class="select-options-container" id="event-target-options-container">
-                        <div class="Clickable select-option" id="target-option-anything">Anything</div>
-                    </div>
-                </div>
-            </section>
-            <section id="create-event-footer" class="Horizontal-Flex-Container modal-footer">
-                <button id="cancel-create-event-button" class="Normal-Button">Cancel</button>
-                <button id="save-create-event-button" class="Normal-Button" disabled>Save</button>
-            </section>
-        </div>
-    </div>
-    <div id="tutorial-overlay" class="Horizontal-Flex-Container collapsed">
-        <svg id="tutorial-pointer" class="facing-right" width="24" height="24" viewBox="1300 750 1100 550" xmlns="http://www.w3.org/2000/svg">
-            <g stroke-linecap="round" id="Layer_2">
-                <path d="M1350.16,584.06 Q1358.54,581.35 1374.08,588.58 Q1845.88,808.11 2317.69,1027.63 Q2350.96,1043.11 2317.25,1057.96 Q1839.12,1268.60 1360.99,1479.24 Q1339.34,1488.78 1331.78,1479.80" fill="none" stroke="rgb(255, 255, 255)" stroke-width="30.00" stroke-opacity="1.00" stroke-linejoin="round"/>
-                <path d="M1340.00,592.00 Q1526.00,1021.00 1328.00,1471.00" fill="none" stroke="rgb(255, 255, 255)" stroke-width="30.00" stroke-opacity="1.00" stroke-linejoin="round"/>
-            </g>
-        </svg>
-        <div id="tutorial-text-container" class="Vertical-Flex-Container">
-            <div class="Horizontal-Flex-Container Align-Top">
-                <span id="tutorial-text">Click here to add a cube to the scene</span>
-                <button class="material-symbols-outlined" id="close-tutorial-button">close</button>
-            </div>
-            <div class="Horizontal-Flex-Container">
-                <button class="material-symbols-outlined" id="step-tutorial-left"> chevron_left </button>
-                <span id="tutorial-step-text">1 / 10</span>
-                <button class="material-symbols-outlined" id="step-tutorial-right"> chevron_right </button>
-            </div>
-        </div>
-    </div>
-    <div id="mobile-overlay">
-        <h1>
-            Physics Playground is not available on mobile
-        </h1>
-        <div id="mobile-overlay-text">
-            It may become available in the future if this application gains enough traffic
-            <br>
-            Please visit on a desktop type device to get the full experience
-            <br>If you want to continue anyway click <button id="close-mobile-overlay-button">here</button>
-        </div>
-    </div>
-    <script src="scripts/main.js" type="module"></script>
-    <script src="scripts/generalStyling.js" type="module"></script>
-    <script src="scripts/styling/top-bar-styling.js" type="module"></script>
-    <script src="scripts/styling/right-bar-styling.js" type="module"></script>
-    <script src="scripts/styling/left-bar-styling.js" type="module"></script>
-    <script src="scripts/styling/settings-page-styling.js" type="module"></script>
-    <script src="scripts/styling/timeline-page-styling.js" type="module"></script>
-    <script src="scripts/styling/create-event-modal-styling.js" type="module"></script>
-    <script src="scripts/timeline.js" type="module"></script>
-    <script src="scripts/tutorial.js" type="module"></script>
-    <script src="scripts/styling/bookmarks-page-styling.js" type="module"></script>
-    <script src="scripts/styling/create-bookmark-modal-styling.js" type="module"></script>
 </body>
 </html>
